@@ -101,6 +101,7 @@ img{-webkit-user-drag:none;user-drag:none}
 #stage{position:absolute;inset:0;overflow:hidden;touch-action:none}
 #world{position:absolute;left:0;top:0;will-change:transform}
 #world .scene{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+#fg1{z-index:1500;pointer-events:none}
 #play .shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(60,140,220,.16) 0,rgba(60,140,220,0) 20%,rgba(30,60,20,0) 70%,rgba(60,50,20,.14) 100%)}
 .hud{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:calc(var(--safe-t) + 12px) 14px 0;z-index:30;pointer-events:none}
@@ -157,19 +158,19 @@ img{-webkit-user-drag:none;user-drag:none}
 #hero .body{position:absolute;left:0;top:0;transform:translate(-50%,-97%);transform-origin:50% 100%}
 #hero img{display:block;height:var(--hh);width:auto}
 #hero img{transition:transform .2s;transform-origin:50% 100%}
-#hero.run img{transform:rotate(calc(var(--dir,1)*7deg))}
-#hero.walk .body{animation:waddle .52s ease-in-out infinite}
-#hero.run .body{animation-duration:.27s}
-#hero.walk .shd{animation:shdw .52s ease-in-out infinite}
-#hero.run .shd{animation-duration:.27s}
+#hero.run img{transform:rotate(calc(var(--dir,1)*3deg))}
+#hero.walk .body{animation:waddle .72s ease-in-out infinite}
+#hero.run .body{animation-duration:.46s}
+#hero.walk .shd{animation:shdw .72s ease-in-out infinite}
+#hero.run .shd{animation-duration:.46s}
 /* 뚱땅뚱땅: 한 걸음마다 쿵 내려앉고(납작) 통통 튀어올라요(길쭉) */
 @keyframes waddle{
-  0%,100%{transform:translate(-50%,-97%) rotate(-8deg) scale(1.07,.9)}
-  25%{transform:translate(-50%,-113%) rotate(0deg) scale(.95,1.07)}
-  50%{transform:translate(-50%,-97%) rotate(8deg) scale(1.07,.9)}
-  75%{transform:translate(-50%,-113%) rotate(0deg) scale(.95,1.07)}
+  0%,100%{transform:translate(-50%,-97%) rotate(-3.5deg) scale(1.02,.98)}
+  25%{transform:translate(-50%,-101%) rotate(0deg) scale(.99,1.02)}
+  50%{transform:translate(-50%,-97%) rotate(3.5deg) scale(1.02,.98)}
+  75%{transform:translate(-50%,-101%) rotate(0deg) scale(.99,1.02)}
 }
-@keyframes shdw{0%,50%,100%{transform:translate(-50%,-50%) scale(1.08)}25%,75%{transform:translate(-50%,-50%) scale(.72)}}
+@keyframes shdw{0%,50%,100%{transform:translate(-50%,-50%) scale(1.02)}25%,75%{transform:translate(-50%,-50%) scale(.9)}}
 #hero.settle .body{animation:settle .3s cubic-bezier(.3,1.6,.5,1)}
 @keyframes settle{0%{transform:translate(-50%,-97%) scale(1.1,.88)}55%{transform:translate(-50%,-99%) scale(.96,1.05)}100%{transform:translate(-50%,-97%) scale(1,1)}}
 #hero.cheer .body{animation:cheer .5s cubic-bezier(.3,1.6,.5,1)}
@@ -237,6 +238,7 @@ img{-webkit-user-drag:none;user-drag:none}
         <span class="shd"></span>
         <div class="body"><div id="say"></div><img id="heroImg" alt="" draggable="false"></div>
       </div>
+      <img class="scene" id="fg1" src="assets/foreground.webp" alt="" draggable="false" hidden>
     </div>
   </div>
   <div class="shade"></div>
@@ -275,6 +277,7 @@ img{-webkit-user-drag:none;user-drag:none}
   // 텃밭 그림 속에 이미 그려진 갈색 땅
   const PATCH = { u0: 0.145, u1: 0.265, v0: 0.515, v1: 0.59 };
   const SLOTS = [{ u: 0.170, v: 0.572 }, { u: 0.205, v: 0.572 }, { u: 0.240, v: 0.572 }];
+  const GATE = { u0: 0.60, u1: 0.88, v1: 0.78 };   // 마당 그림 속 밭 앞: 여기에 들어서면 밭 화면으로
   const STAND = { u: 0.315, v: 0.60 };   // 친구가 밭 일을 할 때 서는 자리
   const GROW_MS = 5200;
 
@@ -322,7 +325,7 @@ img{-webkit-user-drag:none;user-drag:none}
 
   /* ---------- 게임 화면 ---------- */
   const stage = $('#stage'), world = $('#world');
-  const imgs = [$('#scene0'), $('#scene1')];
+  const imgs = [$('#scene0'), $('#scene1')], fg = $('#fg1');
   const heroEl = $('#hero'), say = $('#say');
   const patchEl = $('#patch'), slotsEl = $('#slots');
   const edgeR = $('#edgeR'), edgeL = $('#edgeL'), veil = $('#veil');
@@ -471,7 +474,7 @@ img{-webkit-user-drag:none;user-drag:none}
     if (target && !transitioning) {
       const dx = (target.u - hero.u) * W, dy = (target.v - hero.v) * H;
       const d = Math.hypot(dx, dy);
-      const sp = (0.15 * W + 100) * (run ? 2.1 : 1) * dt;
+      const sp = (0.1 * W + 70) * (run ? 1.6 : 1) * dt;
       if (d <= sp) {
         hero.u = target.u; hero.v = target.v; target = null; run = false;
         kick('settle', 320); saveState();
@@ -481,7 +484,7 @@ img{-webkit-user-drag:none;user-drag:none}
         heroEl.style.setProperty('--dir', dx >= 0 ? 1 : -1);
       }
       renderHero();
-      if (scene === 0 && hero.u >= 0.965 && moving) goScene(1);
+      if (scene === 0 && moving && (hero.u >= 0.965 || (hero.u >= GATE.u0 && hero.u <= GATE.u1 && hero.v <= GATE.v1))) goScene(1);
       else if (scene === 1 && hero.u <= 0.035 && moving) goScene(0);
     }
     if (say.classList.contains('on')) {   // 말풍선이 화면 밖으로 잘리지 않게
@@ -500,13 +503,13 @@ img{-webkit-user-drag:none;user-drag:none}
     veil.classList.add('on');
     setTimeout(() => {
       scene = to;
-      imgs.forEach((im, i) => im.hidden = i !== to);
+      imgs.forEach((im, i) => im.hidden = i !== to); fg.hidden = to !== 1;
       slots.forEach(p => p.el.hidden = to !== 1);
       patchEl.hidden = to !== 1;
       const sc = SCENES[to];
-      hero.u = to === 1 ? 0.05 : 0.95;
+      hero.u = to === 1 ? 0.05 : 0.74;
       hero.v = clamp(hero.v, sc.vmin, sc.vmax);
-      if (to === 1) hero.v = 0.70;
+      if (to === 1) hero.v = 0.70; else hero.v = 0.86;   // 밭 앞에서 돌아와요 (바로 다시 밭으로 안 들어가게 문턱 아래)
       layout(); saveState();
       veil.classList.remove('on');
       setTimeout(() => {
@@ -575,7 +578,7 @@ img{-webkit-user-drag:none;user-drag:none}
     hero.u = ok ? clamp(+sv.hero.u || 0.45, 0.05, 0.95) : 0.45;
     hero.v = ok ? clamp(+sv.hero.v || 0.88, sc.vmin, sc.vmax) : 0.88;
     target = null; pending = false; transitioning = false;
-    imgs.forEach((im, i) => im.hidden = i !== scene);
+    imgs.forEach((im, i) => im.hidden = i !== scene); fg.hidden = scene !== 1;
     slots.forEach((p, i) => { p.el.hidden = scene !== 1; if (ok) restoreSlot(i, sv.slots[i]); else setSlot(i, 0); });
     patchEl.hidden = scene !== 1;
     start.hidden = true; play.hidden = false;
