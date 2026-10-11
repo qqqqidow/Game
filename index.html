@@ -263,11 +263,11 @@ img{-webkit-user-drag:none;user-drag:none}
 <script>
 (() => {
   const CHARS = [
-    { id: 'chiikawa',  name: '치이카와', src: 'assets/chiikawa.webp',  faceR: -1 },
+    { id: 'chiikawa',  name: '치이카와', src: 'assets/chiikawa.webp',  faceR: 1 },
     { id: 'hachiware', name: '하치와레', src: 'assets/hachiware.webp', faceR: 1 },
     { id: 'usagi',     name: '우사기',   src: 'assets/usagi.webp',     faceR: 1 }
-  ];   // faceR: 오른쪽을 볼 때 쓰는 좌우 값(그림마다 원래 보는 방향이 달라요)
-  let faceR = -1;
+  ];   // faceR: 오른쪽을 볼 때 쓰는 좌우 값(세 그림 모두 원래 오른쪽을 봐요)
+  let faceR = 1;
 
   /* 장면: 0 = 마당(시작), 1 = 텃밭(오른쪽 끝으로 가면 나옴)
      좌표는 그림 크기에 대한 비율(0~1) */
