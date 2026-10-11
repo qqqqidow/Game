@@ -129,14 +129,19 @@ img{-webkit-user-drag:none;user-drag:none}
 /* soil patch (painted in the background): one tap target */
 .plot,#stairsHit{position:absolute;z-index:2000;border-radius:18px}
 .plot.hint{animation:glow 1.4s ease-in-out infinite}
-.cover{position:absolute;z-index:5;pointer-events:none;background:url(assets/sand.webp) 0 0/var(--sw,720px) auto;border-radius:40%;opacity:1;transition:opacity .9s ease;
+.cover{position:absolute;z-index:5;pointer-events:none;background:url(assets/sand.webp) 0 0/var(--sw,1670px) auto no-repeat;border-radius:40%;opacity:1;transition:opacity .9s ease;
   -webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);-webkit-mask-composite:source-in;
   mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);mask-composite:intersect}
 .cover.off{opacity:0}
 .plot.pop{animation:glow 1.2s ease-in-out 1}
-#stairs{transform-origin:50% 52%}
-#stairs.boing{animation:boing .42s cubic-bezier(.3,1.6,.5,1)}
-@keyframes boing{0%{transform:scale(1,1)}30%{transform:scale(1.012,.972)}62%{transform:scale(.997,1.014)}100%{transform:scale(1,1)}}
+#stairs{transform:translateY(-70%);opacity:0;visibility:hidden;transition:transform 1.3s cubic-bezier(.25,.7,.3,1),opacity .7s ease,visibility 0s 1.3s}
+#stairs.down{transform:none;opacity:1;visibility:visible;transition:transform 1.3s cubic-bezier(.25,.7,.3,1),opacity .5s ease,visibility 0s}
+/* 구름 버튼: 오른쪽 위, 누르면 구름 계단이 내려와요 */
+.cloudbtn{position:absolute;z-index:30;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;padding:0;
+  right:calc(14px + env(safe-area-inset-right,0px));top:calc(var(--safe-t) + 12px + 50px + 10px)}
+.cloudbtn svg{width:28px;height:28px;position:relative}
+.cloudbtn[aria-pressed="true"]{background:#e6f4ff}
+.cloudbtn:active{transform:translateY(2px)}
 @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 0 6px rgba(255,255,255,.75),0 0 22px 6px rgba(255,244,220,.8)}}
 .slot{position:absolute;left:0;top:0;width:var(--pw);height:var(--pw);pointer-events:none}
 .slot .plant{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
@@ -167,6 +172,8 @@ img{-webkit-user-drag:none;user-drag:none}
 #hero img{display:block;height:var(--hh);width:auto}
 #hero img{transition:transform .2s,scale .14s ease-out;transform-origin:50% 100%;scale:var(--face,1) 1}
 #hero.run img{transform:rotate(calc(var(--dir,1)*var(--face,1)*3deg))}
+#hero.climb .body{animation:climbsway 1.4s ease-in-out infinite}
+@keyframes climbsway{0%,100%{transform:translate(-50%,-97%) rotate(-1.5deg)}50%{transform:translate(-50%,-98%) rotate(1.5deg)}}
 #hero.walk .body{animation:waddle .72s ease-in-out infinite}
 #hero.run .body{animation-duration:.46s}
 #hero.walk .shd{animation:shdw .72s ease-in-out infinite}
@@ -206,13 +213,12 @@ img{-webkit-user-drag:none;user-drag:none}
   .best{margin-top:6px}
 }
 @media (prefers-reduced-motion:reduce){
-  #stairs.boing{animation:none}
   *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
 /* 스티커 공통 적용 대상 */
-.subtitle,.pick-label,.best,.pill,.back,.edge{background:var(--cream);border:3px solid #fff;box-shadow:0 4px 0 var(--lift),0 8px 14px rgba(60,40,20,.12)}
-.subtitle::before,.pick-label::before,.best::before,.pill::before,.back::before,.edge::before{content:"";position:absolute;inset:3px;border-radius:inherit;border:2px dashed var(--stitch);pointer-events:none}
+.subtitle,.pick-label,.best,.pill,.back,.edge,.cloudbtn{background:var(--cream);border:3px solid #fff;box-shadow:0 4px 0 var(--lift),0 8px 14px rgba(60,40,20,.12)}
+.subtitle::before,.pick-label::before,.best::before,.pill::before,.back::before,.edge::before,.cloudbtn::before{content:"";position:absolute;inset:3px;border-radius:inherit;border:2px dashed var(--stitch);pointer-events:none}
 </style>
 </head>
 <body>
@@ -261,6 +267,9 @@ img{-webkit-user-drag:none;user-drag:none}
       <span id="sessionN">0</span><small id="totalN">누적 0</small>
     </div>
   </div>
+  <button class="cloudbtn" id="cloudBtn" type="button" aria-pressed="false" aria-label="구름 계단 내리기" hidden>
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 25a6 6 0 0 1-.6-11.97A8 8 0 0 1 23.6 12 6.5 6.5 0 0 1 23 25z" fill="#fff" stroke="#7cc7f4" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  </button>
   <button class="edge" id="edgeR" type="button">밭으로
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
   </button>
@@ -299,7 +308,7 @@ img{-webkit-user-drag:none;user-drag:none}
       PLOTS.push({ r, c, cx, cy, w, h, v: cy + h * 0.3, stand: { u: cx + 0.03, v: Math.min(0.96, cy + h * 0.8 + 0.045) } });
     }
   });
-  const STAIR = { base: { u: 0.50, v: 0.575 }, topU: 0.503, topV: 0.10, hops: 8, ms: 2600 };   // 구름 계단
+  const STAIR = { base: { u: 0.50, v: 0.575 }, topU: 0.503, topV: 0.10, hops: 8, ms: 3200 };   // 구름 계단
   const need = L => L + 2;   // 다음 레벨까지 필요한 수확 수 (임시)
   const levelOf = t => { let L = 1; while (t >= need(L)) { t -= need(L); L++; } return L; };
   const GATE = { u0: 0.60, u1: 0.88, v1: 0.78 };   // 마당 그림 속 밭 앞: 여기에 들어서면 밭 화면으로
@@ -352,7 +361,8 @@ img{-webkit-user-drag:none;user-drag:none}
   const imgs = [$('#scene0'), $('#scene1')], fg = $('#fg1');
   const heroEl = $('#hero'), say = $('#say');
   const slotsEl = $('#slots'), stairsEl = $('#stairs'), stairsHit = $('#stairsHit');
-  const edgeR = $('#edgeR'), edgeL = $('#edgeL'), veil = $('#veil');
+  const edgeR = $('#edgeR'), edgeL = $('#edgeL'), veil = $('#veil'), cloudBtn = $('#cloudBtn');
+  let stairsOut = false;   // 구름 계단이 내려와 있는지 (저장 안 함)
 
   let scene = 0;
   let vw = 0, vh = 0, W = 0, H = 0, top = 0;
@@ -435,7 +445,8 @@ img{-webkit-user-drag:none;user-drag:none}
       const inStage = on && i < n;
       p.el.hidden = !inStage || !isOpen(i); p.btn.hidden = !inStage || !isOpen(i); p.cover.hidden = !inStage;
     });
-    stairsEl.hidden = !on; stairsHit.hidden = !on;
+    stairsEl.hidden = !on; stairsHit.hidden = !(on && stairsOut); cloudBtn.hidden = !on;
+    stairsEl.classList.toggle('down', stairsOut);
   }
   function setSlot(i, s) {
     const p = slots[i];
@@ -467,7 +478,7 @@ img{-webkit-user-drag:none;user-drag:none}
     world.style.width = W + 'px'; world.style.height = H + 'px'; world.style.top = top + 'px';
     world.style.setProperty('--pw', (H * 0.072).toFixed(1) + 'px');
     slots.forEach(p => {
-      p.el.style.transform = `translate(${(p.pos.cx * W).toFixed(1)}px,${(p.pos.v * H).toFixed(1)}px) translate(-50%,-88%)`;
+      p.el.style.transform = `translate(${(p.pos.cx * W).toFixed(1)}px,${(p.pos.cy * H).toFixed(1)}px) translate(-50%,-88%)`;
       p.el.style.zIndex = Math.round(p.pos.v * 1000);
     });
     slots.forEach(p => {
@@ -481,7 +492,7 @@ img{-webkit-user-drag:none;user-drag:none}
       c.width = ((q.w + mx * 2) * W) + 'px'; c.height = ((q.h + my * 2) * H) + 'px';
       c.backgroundPosition = `${-(q.cx - q.w / 2 - mx) * W}px ${-(q.cy - q.h / 2 - my) * H}px`;
     });
-    world.style.setProperty('--sw', (720 * W / 1670).toFixed(1) + 'px');
+    world.style.setProperty('--sw', W.toFixed(1) + 'px');
     stairsHit.style.left = (0.31 * W) + 'px'; stairsHit.style.top = '0px';
     stairsHit.style.width = (0.39 * W) + 'px'; stairsHit.style.height = (0.50 * H) + 'px';
     renderHero();
@@ -568,7 +579,8 @@ img{-webkit-user-drag:none;user-drag:none}
       const hw = say.offsetWidth / 2, sx = hero.u * W - cam;
       say.style.marginLeft = (Math.max(0, 8 + hw - sx) - Math.max(0, sx + hw - (vw - 8))).toFixed(0) + 'px';
     }
-    heroEl.classList.toggle('walk', moving || climbing);
+    heroEl.classList.toggle('walk', moving);
+    heroEl.classList.toggle('climb', climbing);
     heroEl.classList.toggle('run', moving && run);
     applyCam(false, dt);
   }
@@ -613,7 +625,16 @@ img{-webkit-user-drag:none;user-drag:none}
     if (s === 0) { setSlot(i, 1); speak('씨앗을 심었어요'); return; }
     speak('아직 자라는 중이에요');
   }
-  /* ----- 구름 계단: 누르면 계단 밑까지 걸어가서 통통 올라가요 ----- */
+  /* ----- 구름 버튼: 누르면 구름 계단이 내려오고, 다시 누르면 올라가요 ----- */
+  cloudBtn.addEventListener('click', () => {
+    if (!playing || transitioning || climbing) return;
+    stairsOut = !stairsOut;
+    cloudBtn.setAttribute('aria-pressed', String(stairsOut));
+    stairsEl.classList.toggle('down', stairsOut);
+    stairsHit.hidden = !stairsOut;
+    if (!stairsOut && target && pendingAct) { target = null; pendingAct = null; }
+  });
+  /* ----- 구름 계단: 누르면 계단 밑까지 걸어가서 올라가요 ----- */
   stairsHit.addEventListener('click', e => {
     if (!playing || transitioning) return;
     const fast = isDouble(e.clientX, e.clientY);
@@ -624,14 +645,11 @@ img{-webkit-user-drag:none;user-drag:none}
   function climb() {
     transitioning = true; climbing = true; target = null; run = false;
     const u0 = hero.u, v0 = hero.v, t0 = performance.now();
-    let lastHop = 0;
     const step = now => {
       const p = clamp((now - t0) / STAIR.ms, 0, 1), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-      const ph = p * STAIR.hops, idx = Math.floor(ph);
-      climbK = p; hopPx = Math.sin((ph % 1) * Math.PI) * H * 0.028 * (1 - 0.4 * p);
+      climbK = p; hopPx = 0;
       hero.u = u0 + (STAIR.topU - u0) * Math.min(1, p * 3); hero.v = v0 + (STAIR.topV - v0) * e;
       heroEl.style.setProperty('--dir', 1);
-      if (idx > lastHop && idx < STAIR.hops) { lastHop = idx; stairsEl.classList.remove('boing'); void stairsEl.offsetWidth; stairsEl.classList.add('boing'); }
       renderHero();
       if (p < 1) return requestAnimationFrame(step);
       hopPx = 0; renderHero(); speak('구름공방은 아직 준비 중이에요', 2400);
