@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>여름 텃밭</title>
+<meta name="description" content="밀짚모자 친구와 함께 가꾸는 여름 텃밭">
+<meta name="theme-color" content="#6cc24a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="여름 텃밭">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preload" as="image" href="assets/bg.webp" type="image/webp">
+<link rel="preload" as="font" href="assets/fonts/onglyph.woff" type="font/woff" crossorigin>
+<style>
+@font-face{
+  font-family:"Onglyph";
+  src:url("assets/fonts/onglyph.woff") format("woff");
+  font-weight:400;font-style:normal;font-display:swap;
+}
+:root{
+  --sky:#7cc7f4;
+  --sky-deep:#3f8fd8;
+  --leaf:#78cc52;
+  --leaf-deep:#3f8f2a;
+  --cream:#fffaf0;
+  --paper:#fff4dc;
+  --butter:#ffe69a;
+  --pink:#ff9db4;
+  --pink-deep:#e0668a;
+  --brown:#8a5a3b;
+  --ink:#5a4332;
+  --stitch:rgba(138,90,59,.32);
+  --lift:rgba(138,90,59,.30);
+  --font:"Onglyph","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:#8ccbf5;overflow:hidden;overscroll-behavior:none}
+body{font-family:var(--font);font-weight:400;font-synthesis:none;-webkit-text-stroke:.55px;color:var(--ink);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+img{-webkit-user-drag:none;user-drag:none}
+:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px var(--sky-deep)}
+
+.screen{position:fixed;inset:0;overflow:hidden}
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 62%}
+
+/* ---------- start screen ---------- */
+#start .shade{position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(60,140,220,.28) 0%,rgba(60,140,220,0) 34%,rgba(255,244,220,0) 55%,rgba(60,50,20,.26) 100%)}
+.start-wrap{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-t) + clamp(18px,5vh,56px)) 20px calc(var(--safe-b) + clamp(18px,5vh,48px))}
+.title{margin:0;text-align:center;color:#fffdf2;-webkit-text-stroke:5px #fffdf2;line-height:1;white-space:nowrap;
+  font-size:clamp(52px,min(19vw,14vh),124px);
+  text-shadow:6.0px 0.0px 0 #3f8f2a,5.5px 2.3px 0 #3f8f2a,4.2px 4.2px 0 #3f8f2a,2.3px 5.5px 0 #3f8f2a,0.0px 6.0px 0 #3f8f2a,-2.3px 5.5px 0 #3f8f2a,-4.2px 4.2px 0 #3f8f2a,-5.5px 2.3px 0 #3f8f2a,-6.0px 0.0px 0 #3f8f2a,-5.5px -2.3px 0 #3f8f2a,-4.2px -4.2px 0 #3f8f2a,-2.3px -5.5px 0 #3f8f2a,-0.0px -6.0px 0 #3f8f2a,2.3px -5.5px 0 #3f8f2a,4.2px -4.2px 0 #3f8f2a,5.5px -2.3px 0 #3f8f2a,0 9px 0 #2f6f20,0 14px 26px rgba(30,70,30,.35)}
+.title span{display:inline-block;transform-origin:50% 90%;animation:hop .7s cubic-bezier(.3,1.7,.5,1) both}
+.title span:nth-child(1){transform:rotate(-6deg) translateY(2px);--r:-6deg;animation-delay:.05s}
+.title span:nth-child(2){transform:rotate(4deg) translateY(-3px);--r:4deg;animation-delay:.15s}
+.title span:nth-child(3){transform:rotate(-3deg) translateY(-1px);--r:-3deg;animation-delay:.25s;margin-left:.22em}
+.title span:nth-child(4){transform:rotate(6deg) translateY(3px);--r:6deg;animation-delay:.35s}
+@keyframes hop{from{opacity:0;transform:translateY(-40px) rotate(0)}60%{opacity:1}}
+.subtitle{position:relative;display:inline-block;margin:clamp(14px,2.4vh,22px) 0 0;padding:6px 20px 7px;border-radius:999px;
+  font-size:clamp(18px,2.9vh,24px);color:var(--ink)}
+.title-box{text-align:center}
+.pick{width:100%;max-width:780px}
+.pick-label{position:relative;display:table;margin:0 auto clamp(8px,1.8vh,16px);padding:5px 18px 6px;border-radius:999px;
+  font-size:clamp(17px,2.7vh,22px);color:var(--ink)}
+.pick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,2vw,22px);align-items:end}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:clamp(10px,1.8vh,16px) 8px 0;border-radius:28px;
+  background:rgba(255,250,240,.8);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:4px solid #fff;box-shadow:0 5px 0 var(--lift);
+  transition:transform .22s cubic-bezier(.3,1.5,.5,1),background .2s,box-shadow .2s}
+.card::before{content:"";position:absolute;inset:4px;border-radius:21px;border:2px dashed var(--stitch);pointer-events:none}
+.card img{display:block;width:100%;height:auto;aspect-ratio:4/5;max-height:33vh;object-fit:contain;object-position:50% 100%;filter:saturate(.95);transition:filter .2s}
+.card .nm{-webkit-text-stroke:.7px;position:relative;align-self:stretch;margin:8px -4px -4px;padding:7px 0 9px;border-radius:0 0 24px 24px;text-align:center;
+  font-size:clamp(19px,3vh,25px);background:rgba(255,244,220,.95);color:var(--ink);transition:background .2s,color .2s}
+.card[aria-checked="true"]{transform:translateY(-10px) scale(1.04);background:rgba(255,250,240,.9);box-shadow:0 10px 0 var(--lift),0 18px 28px rgba(60,40,20,.2)}
+.card[aria-checked="true"] img{filter:none}
+.card[aria-checked="true"] .nm{background:var(--pink);color:#fff;-webkit-text-stroke:1.3px #fff;text-shadow:0 2px 0 var(--pink-deep)}
+.card[aria-checked="true"]::after{content:"";position:absolute;right:-8px;top:-10px;width:34px;height:34px;border-radius:50%;background:var(--pink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/20px no-repeat;
+  border:3px solid #fff;box-shadow:0 3px 0 var(--lift);animation:pop .35s cubic-bezier(.3,1.8,.5,1)}
+.go{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin:clamp(14px,3vh,26px) auto 0;min-width:min(78vw,300px);
+  padding:clamp(12px,2.2vh,18px) 30px clamp(13px,2.4vh,20px);border-radius:999px;
+  background:linear-gradient(180deg,#95e06a 0%,#6cc24a 100%);border:4px solid #fff;color:#fff;
+  font-size:clamp(28px,4.4vh,36px);-webkit-text-stroke:2.6px #fff;
+  text-shadow:3.0px 0.0px 0 #3f8f2a,2.8px 1.1px 0 #3f8f2a,2.1px 2.1px 0 #3f8f2a,1.1px 2.8px 0 #3f8f2a,0.0px 3.0px 0 #3f8f2a,-1.1px 2.8px 0 #3f8f2a,-2.1px 2.1px 0 #3f8f2a,-2.8px 1.1px 0 #3f8f2a,-3.0px 0.0px 0 #3f8f2a,-2.8px -1.1px 0 #3f8f2a,-2.1px -2.1px 0 #3f8f2a,-1.1px -2.8px 0 #3f8f2a,-0.0px -3.0px 0 #3f8f2a,1.1px -2.8px 0 #3f8f2a,2.1px -2.1px 0 #3f8f2a,2.8px -1.1px 0 #3f8f2a;
+  box-shadow:0 7px 0 var(--leaf-deep),0 16px 24px rgba(40,80,20,.32);transition:transform .08s,box-shadow .08s}
+.go::before{content:"";position:absolute;left:18px;right:18px;top:5px;height:30%;border-radius:999px;background:rgba(255,255,255,.35);pointer-events:none}
+.go svg{width:1em;height:1em;flex:none;position:relative}
+.go span{position:relative}
+.go:active{transform:translateY(6px);box-shadow:0 1px 0 var(--leaf-deep),0 6px 12px rgba(40,80,20,.3)}
+.best{position:relative;display:table;margin:14px auto 0;padding:4px 16px 5px;border-radius:999px;font-size:clamp(16px,2.5vh,20px);color:var(--ink)}
+
+/* ---------- play screen ---------- */
+#stage{position:absolute;inset:0;overflow:hidden;touch-action:none}
+#world{position:absolute;left:0;top:0;will-change:transform}
+#world .scene{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+#play .shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(60,140,220,.16) 0,rgba(60,140,220,0) 20%,rgba(30,60,20,0) 70%,rgba(60,50,20,.14) 100%)}
+.hud{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:calc(var(--safe-t) + 12px) 14px 0;z-index:30;pointer-events:none}
+.hud>*{pointer-events:auto}
+.pill{position:relative;display:flex;align-items:center;gap:8px;height:50px;padding:0 18px 0 12px;border-radius:999px;
+  font-size:30px;color:var(--ink);-webkit-text-stroke:.9px}
+.pill small{font-size:17px;color:#8a7360}
+.pill svg{width:28px;height:28px;position:relative}
+.pill>*{position:relative}
+.back{position:relative;width:50px;height:50px;border-radius:50%;display:grid;place-items:center}
+.back svg{width:22px;height:22px;position:relative}
+.pill.bump{animation:bump .35s cubic-bezier(.3,1.7,.5,1)}
+@keyframes bump{40%{transform:scale(1.14)}}
+
+/* edge arrows: walk to the next place */
+.edge{position:absolute;top:50%;z-index:25;display:flex;align-items:center;gap:4px;height:52px;padding:0 16px 2px;border-radius:999px;
+  font-size:21px;color:var(--ink);animation:nudge 1.3s ease-in-out infinite}
+.edge svg{width:20px;height:20px;position:relative}
+.edge>*{position:relative}
+#edgeR{right:calc(10px + env(safe-area-inset-right,0px))}
+#edgeL{left:calc(10px + env(safe-area-inset-left,0px));flex-direction:row-reverse;animation-name:nudgeL}
+@keyframes nudge{50%{transform:translateX(5px)}}
+@keyframes nudgeL{50%{transform:translateX(-5px)}}
+
+/* soil patch (painted in the background): one tap target */
+#patch{position:absolute;z-index:2000;border-radius:18px}
+#patch.hint{animation:glow 1.4s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 0 6px rgba(255,255,255,.75),0 0 22px 6px rgba(255,244,220,.8)}}
+.slot{position:absolute;left:0;top:0;width:var(--pw);height:var(--pw);pointer-events:none}
+.slot .plant{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.plant>g{display:none}
+.slot[data-s="1"] .g-seed{display:block}
+.slot[data-s="2"] .g-sprout{display:block;transform-origin:50px 88px;transform:scale(calc(.45 + var(--p,0)*.75))}
+.slot[data-s="3"] .g-ripe{display:block;transform-origin:50px 88px;animation:pop .5s cubic-bezier(.3,1.7,.5,1)}
+@keyframes pop{from{transform:scale(.6)}}
+.cue{position:absolute;left:50%;top:-24%;transform:translateX(-50%);padding:2px 11px 3px;border-radius:999px;background:var(--cream);border:2px solid #fff;
+  font-size:20px;white-space:nowrap;box-shadow:0 3px 0 var(--lift);color:var(--ink);display:none;animation:hover 1.1s ease-in-out infinite}
+.slot[data-s="1"] .cue,.slot[data-s="3"] .cue{display:block}
+.slot[data-s="3"] .cue{background:var(--pink);color:#fff;-webkit-text-stroke:1px #fff;text-shadow:0 2px 0 var(--pink-deep)}
+@keyframes hover{50%{transform:translateX(-50%) translateY(-4px)}}
+.bar{position:absolute;left:18%;right:18%;bottom:-6%;height:8px;border-radius:9px;background:rgba(255,255,255,.75);border:1.5px solid #fff;overflow:hidden;display:none}
+.slot[data-s="2"] .bar{display:block}
+.bar i{display:block;height:100%;width:calc(var(--p,0)*100%);background:#58b8f0;border-radius:9px}
+.drops{position:absolute;left:50%;top:-10%;width:90%;height:60%;transform:translateX(-50%);pointer-events:none}
+.drops i{position:absolute;top:0;width:7px;height:11px;border-radius:50% 50% 50% 50%/65% 65% 40% 40%;background:#58b8f0;opacity:0;animation:fall .7s ease-in forwards}
+@keyframes fall{0%{opacity:0;transform:translateY(0)}20%{opacity:1}100%{opacity:0;transform:translateY(40px)}}
+.float{position:absolute;left:50%;top:-10%;transform:translateX(-50%);font-size:38px;color:#fff;-webkit-text-stroke:3px #fff;pointer-events:none;
+  text-shadow:3.0px 0.0px 0 #3f8f2a,2.8px 1.1px 0 #3f8f2a,2.1px 2.1px 0 #3f8f2a,1.1px 2.8px 0 #3f8f2a,0.0px 3.0px 0 #3f8f2a,-1.1px 2.8px 0 #3f8f2a,-2.1px 2.1px 0 #3f8f2a,-2.8px 1.1px 0 #3f8f2a,-3.0px 0.0px 0 #3f8f2a,-2.8px -1.1px 0 #3f8f2a,-2.1px -2.1px 0 #3f8f2a,-1.1px -2.8px 0 #3f8f2a,-0.0px -3.0px 0 #3f8f2a,1.1px -2.8px 0 #3f8f2a,2.1px -2.1px 0 #3f8f2a,2.8px -1.1px 0 #3f8f2a;animation:rise .9s ease-out forwards}
+@keyframes rise{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-46px)}}
+
+/* character */
+#hero{position:absolute;left:0;top:0;pointer-events:none;--hh:120px}
+#hero .shd{position:absolute;left:0;top:0;width:calc(var(--hh)*.6);height:calc(var(--hh)*.13);transform:translate(-50%,-50%);border-radius:50%;background:rgba(30,40,10,.28);filter:blur(2px)}
+#hero .body{position:absolute;left:0;top:0;transform:translate(-50%,-97%);transform-origin:50% 100%}
+#hero img{display:block;height:var(--hh);width:auto}
+#hero img{transition:transform .2s;transform-origin:50% 100%}
+#hero.run img{transform:rotate(calc(var(--dir,1)*7deg))}
+#hero.walk .body{animation:waddle .52s ease-in-out infinite}
+#hero.run .body{animation-duration:.27s}
+#hero.walk .shd{animation:shdw .52s ease-in-out infinite}
+#hero.run .shd{animation-duration:.27s}
+/* 뚱땅뚱땅: 한 걸음마다 쿵 내려앉고(납작) 통통 튀어올라요(길쭉) */
+@keyframes waddle{
+  0%,100%{transform:translate(-50%,-97%) rotate(-8deg) scale(1.07,.9)}
+  25%{transform:translate(-50%,-113%) rotate(0deg) scale(.95,1.07)}
+  50%{transform:translate(-50%,-97%) rotate(8deg) scale(1.07,.9)}
+  75%{transform:translate(-50%,-113%) rotate(0deg) scale(.95,1.07)}
+}
+@keyframes shdw{0%,50%,100%{transform:translate(-50%,-50%) scale(1.08)}25%,75%{transform:translate(-50%,-50%) scale(.72)}}
+#hero.settle .body{animation:settle .3s cubic-bezier(.3,1.6,.5,1)}
+@keyframes settle{0%{transform:translate(-50%,-97%) scale(1.1,.88)}55%{transform:translate(-50%,-99%) scale(.96,1.05)}100%{transform:translate(-50%,-97%) scale(1,1)}}
+#hero.cheer .body{animation:cheer .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes cheer{0%{transform:translate(-50%,-97%) scale(1,1)}30%{transform:translate(-50%,-97%) scale(1.08,.9)}60%{transform:translate(-50%,-135%) scale(.94,1.08)}100%{transform:translate(-50%,-97%) scale(1,1)}}
+#say{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%) scale(.9);padding:6px 16px 8px;border-radius:20px;background:#fff;
+  font-size:21px;white-space:nowrap;box-shadow:0 4px 0 var(--lift);opacity:0;transition:opacity .2s,transform .2s;color:var(--ink)}
+#say.on{opacity:1;transform:translateX(-50%) scale(1)}
+#say::after{content:"";position:absolute;left:50%;top:100%;margin-left:-8px;border:8px solid transparent;border-top-color:#fff}
+
+#veil{position:absolute;inset:0;z-index:40;background:var(--paper);opacity:0;pointer-events:none;transition:opacity .25s}
+#veil.on{opacity:1;pointer-events:auto}
+
+/* 가로 화면(높이가 낮을 때): 시작 화면을 한 화면에 맞게 */
+@media (max-height:520px){
+  .title{font-size:clamp(44px,17vh,72px)}
+  .subtitle{display:none}
+  .start-wrap{justify-content:space-evenly;padding-top:calc(var(--safe-t) + 10px);padding-bottom:calc(var(--safe-b) + 10px)}
+  .pick{max-width:min(560px,92vw)}
+  .pick-label{margin-bottom:6px}
+  .card{border-radius:22px;padding-top:6px}
+  .card::before{border-radius:15px}
+  .card img{max-height:30vh}
+  .card .nm{padding:4px 0 6px;font-size:18px;border-radius:0 0 18px 18px}
+  .go{margin-top:10px;padding:8px 28px 10px;font-size:24px;min-width:220px}
+  .best{margin-top:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* 스티커 공통 적용 대상 */
+.subtitle,.pick-label,.best,.pill,.back,.edge{background:var(--cream);border:3px solid #fff;box-shadow:0 4px 0 var(--lift),0 8px 14px rgba(60,40,20,.12)}
+.subtitle::before,.pick-label::before,.best::before,.pill::before,.back::before,.edge::before{content:"";position:absolute;inset:3px;border-radius:inherit;border:2px dashed var(--stitch);pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- 시작 화면 -->
+<main id="start" class="screen">
+  <img class="bg" src="assets/bg.webp" alt="" draggable="false">
+  <div class="shade"></div>
+  <div class="start-wrap">
+    <header class="title-box">
+      <h1 class="title" aria-label="여름 텃밭"><span aria-hidden="true">여</span><span aria-hidden="true">름</span><span aria-hidden="true">텃</span><span aria-hidden="true">밭</span></h1>
+      <p class="subtitle">유준이와 먼작귀의 귀농일기 🌱</p>
+    </header>
+    <section class="pick" aria-labelledby="pick-label">
+      <p class="pick-label" id="pick-label">함께할 친구를 골라요</p>
+      <div class="pick-row" id="pickRow" role="radiogroup" aria-labelledby="pick-label"></div>
+      <button class="go" id="goBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V12" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M12 13C12 8 8 5 3 5c0 5 3 8 9 8z" fill="#fff"/><path d="M12 11c0-4 3-7 9-7 0 5-3 8-9 7z" fill="#fff" opacity=".85"/></svg><span>시작하기</span></button>
+      <p class="best" id="bestLine" hidden></p>
+    </section>
+  </div>
+</main>
+
+<!-- 게임 화면 -->
+<section id="play" class="screen" hidden>
+  <div id="stage">
+    <div id="world">
+      <img class="scene" id="scene0" src="assets/bg.webp" alt="" draggable="false">
+      <img class="scene" id="scene1" src="assets/bg2.webp" alt="" draggable="false" hidden>
+      <div id="slots"></div>
+      <button id="patch" type="button" aria-label="밭: 씨앗 심기, 물 주기, 수확하기" hidden></button>
+      <div id="hero">
+        <span class="shd"></span>
+        <div class="body"><div id="say"></div><img id="heroImg" alt="" draggable="false"></div>
+      </div>
+    </div>
+  </div>
+  <div class="shade"></div>
+  <div class="hud">
+    <button class="back" id="backBtn" type="button" aria-label="친구 다시 고르기">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5a4332" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="pill" id="score" aria-live="polite">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><g transform="rotate(-28 16 16)"><rect x="4" y="11" width="24" height="10" rx="5" fill="#6cc24a" stroke="#3f8f2a" stroke-width="2"/><circle cx="10" cy="16" r="1.7" fill="#3f8f2a"/><circle cx="16" cy="16" r="1.7" fill="#3f8f2a"/><circle cx="22" cy="16" r="1.7" fill="#3f8f2a"/></g></svg>
+      <span id="sessionN">0</span><small id="totalN">누적 0</small>
+    </div>
+  </div>
+  <button class="edge" id="edgeR" type="button">밭으로
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
+  <button class="edge" id="edgeL" type="button" hidden>마당으로
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <div id="veil"></div>
+</section>
+
+<script>
+(() => {
+  const CHARS = [
+    { id: 'chiikawa',  name: '치이카와', src: 'assets/chiikawa.webp'  },
+    { id: 'hachiware', name: '하치와레', src: 'assets/hachiware.webp' },
+    { id: 'usagi',     name: '우사기',   src: 'assets/usagi.webp'     }
+  ];
+
+  /* 장면: 0 = 마당(시작), 1 = 텃밭(오른쪽 끝으로 가면 나옴)
+     좌표는 그림 크기에 대한 비율(0~1) */
+  const SCENES = [
+    { nw: 1672, nh: 940, vmin: 0.72, vmax: 0.97 },
+    { nw: 1670, nh: 942, vmin: 0.56, vmax: 0.97 }
+  ];
+  // 텃밭 그림 속에 이미 그려진 갈색 땅
+  const PATCH = { u0: 0.145, u1: 0.265, v0: 0.515, v1: 0.59 };
+  const SLOTS = [{ u: 0.170, v: 0.572 }, { u: 0.205, v: 0.572 }, { u: 0.240, v: 0.572 }];
+  const STAND = { u: 0.315, v: 0.60 };   // 친구가 밭 일을 할 때 서는 자리
+  const GROW_MS = 5200;
+
+  const $ = s => document.querySelector(s);
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('summer-garden.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('summer-garden.' + k, JSON.stringify(v)); } catch {} }
+  };
+
+  let sel = store.get('char', 'chiikawa');
+  if (!CHARS.some(c => c.id === sel)) sel = 'chiikawa';
+  let total = store.get('total', 0);
+  let session = 0;
+
+  const start = $('#start'), play = $('#play');
+
+  /* ---------- 배경음악 (계속 반복) ---------- */
+  const bgm = new Audio('assets/audio/audio.mp3');
+  bgm.loop = true; bgm.volume = 0.5; bgm.preload = 'auto';
+  let bgmOn = false;
+  function bgmPlay() { bgmOn = true; bgm.play().catch(() => {}); }
+
+  /* ---------- 시작 화면: 캐릭터 고르기 ---------- */
+  const row = $('#pickRow');
+  CHARS.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'card'; b.dataset.id = c.id;
+    b.setAttribute('role', 'radio');
+    b.innerHTML = `<img src="${c.src}" alt="" draggable="false"><span class="nm">${c.name}</span>`;
+    b.addEventListener('click', () => choose(c.id));
+    row.appendChild(b);
+  });
+  function choose(id) {
+    sel = id; store.set('char', id);
+    row.querySelectorAll('.card').forEach(el => el.setAttribute('aria-checked', String(el.dataset.id === id)));
+  }
+  choose(sel);
+  function showBest() {
+    const el = $('#bestLine');
+    if (total > 0) { el.hidden = false; el.textContent = `지금까지 콩 ${total}개를 땄어요`; } else el.hidden = true;
+  }
+  showBest();
+
+  /* ---------- 게임 화면 ---------- */
+  const stage = $('#stage'), world = $('#world');
+  const imgs = [$('#scene0'), $('#scene1')];
+  const heroEl = $('#hero'), say = $('#say');
+  const patchEl = $('#patch'), slotsEl = $('#slots');
+  const edgeR = $('#edgeR'), edgeL = $('#edgeL'), veil = $('#veil');
+
+  let scene = 0;
+  let vw = 0, vh = 0, W = 0, H = 0, top = 0;
+  let cam = 0;
+  const hero = { u: 0.45, v: 0.88 };
+  let target = null, pending = false, transitioning = false, playing = false;
+  let run = false, tapCount = 0, lastTap = { t: 0, x: 0, y: 0 };
+  let lastT = 0, rafId = 0, sayTimer = null, tickTimer = null;
+
+  const plantSVG = `
+    <svg class="plant" viewBox="0 0 100 100" aria-hidden="true">
+      <g class="g-seed">
+        <ellipse cx="50" cy="86" rx="13" ry="6" fill="#6b4228"/>
+        <ellipse cx="45" cy="83" rx="4" ry="2.6" fill="#e6c27a"/><ellipse cx="56" cy="85" rx="4" ry="2.6" fill="#e6c27a"/>
+      </g>
+      <g class="g-sprout">
+        <path d="M50 88 C50 74 50 66 51 58" stroke="#4a9a32" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <ellipse cx="38" cy="58" rx="14" ry="8" fill="#7fd157" stroke="#3f8f2a" stroke-width="2.5" transform="rotate(-28 38 58)"/>
+        <ellipse cx="63" cy="55" rx="14" ry="8" fill="#6cc24a" stroke="#3f8f2a" stroke-width="2.5" transform="rotate(28 63 55)"/>
+      </g>
+      <g class="g-ripe">
+        <path d="M50 90 C48 70 52 52 50 34" stroke="#4a9a32" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <ellipse cx="32" cy="46" rx="17" ry="9" fill="#7fd157" stroke="#3f8f2a" stroke-width="2.5" transform="rotate(-30 32 46)"/>
+        <ellipse cx="68" cy="42" rx="17" ry="9" fill="#6cc24a" stroke="#3f8f2a" stroke-width="2.5" transform="rotate(30 68 42)"/>
+        <ellipse cx="50" cy="26" rx="14" ry="8" fill="#8be05f" stroke="#3f8f2a" stroke-width="2.5" transform="rotate(-8 50 26)"/>
+        <g transform="rotate(14 34 66)"><rect x="20" y="60" width="28" height="12" rx="6" fill="#6cc24a" stroke="#3f8f2a" stroke-width="2.5"/><circle cx="29" cy="66" r="1.8" fill="#3f8f2a"/><circle cx="39" cy="66" r="1.8" fill="#3f8f2a"/></g>
+        <g transform="rotate(-16 66 70)"><rect x="52" y="64" width="28" height="12" rx="6" fill="#6cc24a" stroke="#3f8f2a" stroke-width="2.5"/><circle cx="61" cy="70" r="1.8" fill="#3f8f2a"/><circle cx="71" cy="70" r="1.8" fill="#3f8f2a"/></g>
+      </g>
+    </svg>`;
+
+  // 밭 칸 3개: 그림 속 갈색 땅 위에 심겨요 (따로 그린 밭 없음)
+  const slots = SLOTS.map((pos, i) => {
+    const el = document.createElement('div');
+    el.className = 'slot'; el.dataset.s = '0';
+    el.innerHTML = `${plantSVG}<span class="cue"></span><span class="bar"><i></i></span>`;
+    el.hidden = true;
+    slotsEl.appendChild(el);
+    return { el, s: 0, t0: 0, pos };
+  });
+  const CUE = { 1: '물 주기', 3: '수확!' };
+  function setSlot(i, s) {
+    const p = slots[i];
+    p.s = s; p.el.dataset.s = String(s);
+    if (s === 2) p.t0 = Date.now();
+    p.el.style.setProperty('--p', 0);
+    p.el.querySelector('.cue').textContent = CUE[s] || '';
+    patchEl.classList.toggle('hint', slots.every(x => x.s === 0));
+    saveState();
+  }
+  function restoreSlot(i, d) {
+    const p = slots[i];
+    const s = [0, 1, 2, 3].includes(d && d.s) ? d.s : 0;
+    p.s = s; p.el.dataset.s = String(s);
+    p.t0 = (d && +d.t0) || Date.now();
+    p.el.style.setProperty('--p', 0);
+    p.el.querySelector('.cue').textContent = CUE[s] || '';
+    patchEl.classList.toggle('hint', slots.every(x => x.s === 0));
+  }
+  /* 전체 저장: 장면, 친구 위치, 이번 판 점수, 밭 3칸의 상태와 심은 시각 */
+  function saveState() {
+    if (!playing) return;
+    store.set('state', { scene, hero: { u: hero.u, v: hero.v }, session, slots: slots.map(p => ({ s: p.s, t0: p.t0 })) });
+  }
+
+  /* ----- 화면 크기에 맞춰 장면 배치 (바닥 기준, 가로로 넘치면 카메라가 따라감) ----- */
+  function layout() {
+    vw = innerWidth; vh = innerHeight;
+    const sc = SCENES[scene];
+    const s = Math.max(vw / sc.nw, vh / sc.nh);
+    W = sc.nw * s; H = sc.nh * s; top = vh - H;
+    world.style.width = W + 'px'; world.style.height = H + 'px'; world.style.top = top + 'px';
+    world.style.setProperty('--pw', (H * 0.072).toFixed(1) + 'px');
+    slots.forEach(p => {
+      p.el.style.transform = `translate(${(p.pos.u * W).toFixed(1)}px,${(p.pos.v * H).toFixed(1)}px) translate(-50%,-88%)`;
+      p.el.style.zIndex = Math.round(p.pos.v * 1000);
+    });
+    const pad = Math.max(6, H * 0.012);
+    patchEl.style.left = (PATCH.u0 * W - pad) + 'px';
+    patchEl.style.top = (PATCH.v0 * H - pad - H * 0.05) + 'px';
+    patchEl.style.width = ((PATCH.u1 - PATCH.u0) * W + pad * 2) + 'px';
+    patchEl.style.height = ((PATCH.v1 - PATCH.v0) * H + pad * 2 + H * 0.05) + 'px';
+    renderHero();
+    applyCam(true);
+  }
+  function renderHero() {
+    const sc = SCENES[scene];
+    const t = clamp((hero.v - sc.vmin) / (sc.vmax - sc.vmin), 0, 1);
+    heroEl.style.setProperty('--hh', (H * (0.17 + 0.09 * t)).toFixed(1) + 'px');
+    heroEl.style.transform = `translate(${(hero.u * W).toFixed(1)}px,${(hero.v * H).toFixed(1)}px)`;
+    heroEl.style.zIndex = Math.round(hero.v * 1000);
+  }
+  function applyCam(jump, dt = 0) {
+    // 밭 장면에서는 친구가 밭 근처에 있을 때 갈색 땅이 화면 안에 들어오도록 카메라를 밭 쪽으로 당겨요
+    let focus = hero.u;
+    if (scene === 1) { const w = clamp((0.5 - hero.u) / 0.2, 0, 1); focus = hero.u * (1 - w) + 0.215 * w; }
+    const goal = clamp(focus * W - vw / 2, 0, Math.max(0, W - vw));
+    cam = jump ? goal : cam + (goal - cam) * Math.min(1, dt * 6);
+    world.style.transform = `translateX(${(-cam).toFixed(1)}px)`;
+    const maxCam = Math.max(0, W - vw);
+    edgeR.style.display = ''; edgeL.style.display = '';
+    edgeR.hidden = !(scene === 0 && cam >= maxCam - 60);
+    edgeL.hidden = !(scene === 1 && cam <= 60);
+  }
+
+  /* ----- 말풍선 / 연출 ----- */
+  function speak(t, ms = 1700) {
+    say.textContent = t; say.classList.add('on');
+    clearTimeout(sayTimer); sayTimer = setTimeout(() => say.classList.remove('on'), ms);
+  }
+  function kick(cls, ms) {
+    heroEl.classList.remove('cheer', 'settle'); void heroEl.offsetWidth;
+    heroEl.classList.add(cls); setTimeout(() => heroEl.classList.remove(cls), ms);
+  }
+
+  /* ----- 이동 ----- */
+  // 같은 곳 근처를 빠르게 두 번 누르면 더블탭 → 달려가요
+  function isDouble(x, y) {
+    const now = performance.now();
+    const dbl = now - lastTap.t < 320 && Math.hypot(x - lastTap.x, y - lastTap.y) < 70;
+    lastTap = dbl ? { t: 0, x: 0, y: 0 } : { t: now, x, y };
+    if (dbl) store.set('dbl', true);
+    else if (++tapCount === 3 && !store.get('dbl', false)) speak('두 번 빠르게 누르면 뛰어요!', 2800);
+    return dbl;
+  }
+  function walkTo(u, v, fast = false) {
+    const sc = SCENES[scene];
+    target = { u: clamp(u, 0.01, 0.99), v: clamp(v, sc.vmin, sc.vmax) };
+    pending = false; run = fast;
+  }
+  stage.addEventListener('pointerdown', e => {
+    if (!playing || transitioning) return;
+    if (e.target.closest('#patch')) return;
+    walkTo((e.clientX + cam) / W, (e.clientY - top) / H, isDouble(e.clientX, e.clientY));
+  });
+  edgeR.addEventListener('click', e => { if (!transitioning) walkTo(0.99, hero.v, isDouble(e.clientX, e.clientY)); });
+  edgeL.addEventListener('click', e => { if (!transitioning) walkTo(0.01, hero.v, isDouble(e.clientX, e.clientY)); });
+
+  function frame(t) {
+    rafId = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (t - lastT) / 1000 || 0); lastT = t;
+    if (!playing) return;
+    let moving = false;
+    if (target && !transitioning) {
+      const dx = (target.u - hero.u) * W, dy = (target.v - hero.v) * H;
+      const d = Math.hypot(dx, dy);
+      const sp = (0.15 * W + 100) * (run ? 2.1 : 1) * dt;
+      if (d <= sp) {
+        hero.u = target.u; hero.v = target.v; target = null; run = false;
+        kick('settle', 320); saveState();
+        if (pending) { pending = false; patchAction(); }
+      } else {
+        hero.u += dx / d * sp / W; hero.v += dy / d * sp / H; moving = true;
+        heroEl.style.setProperty('--dir', dx >= 0 ? 1 : -1);
+      }
+      renderHero();
+      if (scene === 0 && hero.u >= 0.965 && moving) goScene(1);
+      else if (scene === 1 && hero.u <= 0.035 && moving) goScene(0);
+    }
+    if (say.classList.contains('on')) {   // 말풍선이 화면 밖으로 잘리지 않게
+      const hw = say.offsetWidth / 2, sx = hero.u * W - cam;
+      say.style.marginLeft = (Math.max(0, 8 + hw - sx) - Math.max(0, sx + hw - (vw - 8))).toFixed(0) + 'px';
+    }
+    heroEl.classList.toggle('walk', moving);
+    heroEl.classList.toggle('run', moving && run);
+    applyCam(false, dt);
+  }
+
+  /* ----- 장면 전환: 마당의 오른쪽 끝 → 텃밭, 텃밭의 왼쪽 끝 → 마당 ----- */
+  function goScene(to) {
+    transitioning = true; target = null; pending = false; run = false;
+    heroEl.classList.remove('walk', 'run');
+    veil.classList.add('on');
+    setTimeout(() => {
+      scene = to;
+      imgs.forEach((im, i) => im.hidden = i !== to);
+      slots.forEach(p => p.el.hidden = to !== 1);
+      patchEl.hidden = to !== 1;
+      const sc = SCENES[to];
+      hero.u = to === 1 ? 0.05 : 0.95;
+      hero.v = clamp(hero.v, sc.vmin, sc.vmax);
+      if (to === 1) hero.v = 0.70;
+      layout(); saveState();
+      veil.classList.remove('on');
+      setTimeout(() => {
+        transitioning = false;
+        speak(to === 1 ? '밭이다! 갈색 땅을 눌러요' : '마당으로 돌아왔어요', 2400);
+      }, 260);
+    }, 270);
+  }
+
+  /* ----- 밭 일: 갈색 땅을 누르면 상황에 맞는 일을 해요 ----- */
+  patchEl.addEventListener('click', e => {
+    if (!playing || transitioning) return;
+    const fast = isDouble(e.clientX, e.clientY);
+    const near = Math.abs(hero.u - STAND.u) < 0.045 && Math.abs(hero.v - STAND.v) < 0.05;
+    if (near) { target = null; patchAction(); }
+    else { target = { u: STAND.u, v: STAND.v }; pending = true; run = fast; }
+  });
+  function patchAction() {
+    let i = slots.findIndex(p => p.s === 3);
+    if (i >= 0) return harvest(i);
+    i = slots.findIndex(p => p.s === 1);
+    if (i >= 0) { water(i); setSlot(i, 2); speak('쑥쑥 자라라!'); return; }
+    i = slots.findIndex(p => p.s === 0);
+    if (i >= 0) { setSlot(i, 1); speak('씨앗을 심었어요'); return; }
+    speak('아직 자라는 중이에요');
+  }
+  function water(i) {
+    const d = document.createElement('span'); d.className = 'drops';
+    d.innerHTML = '<i style="left:12%;animation-delay:0s"></i><i style="left:45%;animation-delay:.1s"></i><i style="left:76%;animation-delay:.2s"></i>';
+    slots[i].el.appendChild(d); setTimeout(() => d.remove(), 1000);
+  }
+  function harvest(i) {
+    setSlot(i, 0);
+    session++; total++; store.set('total', total); saveState();
+    renderScore(true);
+    kick('cheer', 520);
+    const f = document.createElement('span'); f.className = 'float'; f.textContent = '+1';
+    slots[i].el.appendChild(f); setTimeout(() => f.remove(), 950);
+    const lines = ['맛있겠다!', '콩이 통통해요', '잘 땄어요!', '한 개 더!'];
+    speak(session % 10 === 0 ? `벌써 ${session}개째!` : lines[session % lines.length]);
+  }
+  function renderScore(bump) {
+    $('#sessionN').textContent = session;
+    $('#totalN').textContent = `누적 ${total}`;
+    if (bump) { const s = $('#score'); s.classList.remove('bump'); void s.offsetWidth; s.classList.add('bump'); }
+  }
+  function tick() {
+    const now = Date.now();
+    slots.forEach((p, i) => {
+      if (p.s !== 2) return;
+      const k = Math.min(1, (now - p.t0) / GROW_MS);
+      p.el.style.setProperty('--p', k.toFixed(3));
+      if (k >= 1) setSlot(i, 3);
+    });
+  }
+
+  /* ---------- 화면 전환 ---------- */
+  function enterGame() {
+    const c = CHARS.find(x => x.id === sel);
+    $('#heroImg').src = c.src;
+    const sv = store.get('state', null);
+    const ok = !!(sv && Array.isArray(sv.slots) && sv.slots.length === slots.length && sv.hero);
+    scene = ok && sv.scene === 1 ? 1 : 0;
+    const sc = SCENES[scene];
+    session = ok ? (sv.session | 0) : 0; renderScore(false);
+    hero.u = ok ? clamp(+sv.hero.u || 0.45, 0.05, 0.95) : 0.45;
+    hero.v = ok ? clamp(+sv.hero.v || 0.88, sc.vmin, sc.vmax) : 0.88;
+    target = null; pending = false; transitioning = false;
+    imgs.forEach((im, i) => im.hidden = i !== scene);
+    slots.forEach((p, i) => { p.el.hidden = scene !== 1; if (ok) restoreSlot(i, sv.slots[i]); else setSlot(i, 0); });
+    patchEl.hidden = scene !== 1;
+    start.hidden = true; play.hidden = false;
+    playing = true; lastT = performance.now();
+    layout();
+    speak(ok ? '다시 만났어요!' : '오른쪽 끝으로 가면 밭이 나와요', 3200);
+    clearInterval(tickTimer); tickTimer = setInterval(tick, 100);
+    cancelAnimationFrame(rafId); rafId = requestAnimationFrame(frame);
+    saveState();
+    bgmPlay();
+  }
+  function leaveGame() {
+    saveState(); playing = false; clearInterval(tickTimer); cancelAnimationFrame(rafId);
+    play.hidden = true; start.hidden = false; showBest();
+  }
+  $('#goBtn').addEventListener('click', enterGame);
+  $('#backBtn').addEventListener('click', leaveGame);
+  addEventListener('resize', () => { if (playing) layout(); });
+  addEventListener('pagehide', saveState);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { saveState(); bgm.pause(); }
+    else if (bgmOn) bgm.play().catch(() => {});
+  });
+
+  /* ---------- PWA ---------- */
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
