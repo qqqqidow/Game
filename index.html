@@ -263,10 +263,11 @@ img{-webkit-user-drag:none;user-drag:none}
 <script>
 (() => {
   const CHARS = [
-    { id: 'chiikawa',  name: '치이카와', src: 'assets/chiikawa.webp'  },
-    { id: 'hachiware', name: '하치와레', src: 'assets/hachiware.webp' },
-    { id: 'usagi',     name: '우사기',   src: 'assets/usagi.webp'     }
-  ];
+    { id: 'chiikawa',  name: '치이카와', src: 'assets/chiikawa.webp',  faceR: -1 },
+    { id: 'hachiware', name: '하치와레', src: 'assets/hachiware.webp', faceR: 1 },
+    { id: 'usagi',     name: '우사기',   src: 'assets/usagi.webp',     faceR: 1 }
+  ];   // faceR: 오른쪽을 볼 때 쓰는 좌우 값(그림마다 원래 보는 방향이 달라요)
+  let faceR = -1;
 
   /* 장면: 0 = 마당(시작), 1 = 텃밭(오른쪽 끝으로 가면 나옴)
      좌표는 그림 크기에 대한 비율(0~1) */
@@ -458,7 +459,7 @@ img{-webkit-user-drag:none;user-drag:none}
     target = { u: clamp(u, 0.01, 0.99), v: clamp(v, sc.vmin, sc.vmax) };
     pending = false; run = fast;
     const fdx = (target.u - hero.u) * W;
-    if (Math.abs(fdx) > 4) heroEl.style.setProperty('--face', fdx > 0 ? -1 : 1);   // 누른 쪽으로 바라봐요
+    if (Math.abs(fdx) > 4) heroEl.style.setProperty('--face', fdx > 0 ? faceR : -faceR);   // 누른 쪽으로 바라봐요
   }
   stage.addEventListener('pointerdown', e => {
     if (!playing || transitioning) return;
@@ -484,7 +485,7 @@ img{-webkit-user-drag:none;user-drag:none}
       } else {
         hero.u += dx / d * sp / W; hero.v += dy / d * sp / H; moving = true;
         heroEl.style.setProperty('--dir', dx >= 0 ? 1 : -1);
-        if (Math.abs(dx) > 1.5) heroEl.style.setProperty('--face', dx > 0 ? -1 : 1);
+        if (Math.abs(dx) > 1.5) heroEl.style.setProperty('--face', dx > 0 ? faceR : -faceR);
       }
       renderHero();
       if (scene === 0 && moving && (hero.u >= 0.965 || (hero.u >= GATE.u0 && hero.u <= GATE.u1 && hero.v <= GATE.v1))) goScene(1);
@@ -531,7 +532,7 @@ img{-webkit-user-drag:none;user-drag:none}
     else { target = { u: STAND.u, v: STAND.v }; pending = true; run = fast; }
   });
   function patchAction() {
-    heroEl.style.setProperty('--face', 1);   // 밭은 친구 왼쪽에 있어요
+    heroEl.style.setProperty('--face', -faceR);   // 밭은 친구 왼쪽에 있어요
     let i = slots.findIndex(p => p.s === 3);
     if (i >= 0) return harvest(i);
     i = slots.findIndex(p => p.s === 1);
@@ -573,6 +574,7 @@ img{-webkit-user-drag:none;user-drag:none}
   /* ---------- 화면 전환 ---------- */
   function enterGame() {
     const c = CHARS.find(x => x.id === sel);
+    faceR = c.faceR; heroEl.style.setProperty('--face', faceR);
     $('#heroImg').src = c.src;
     const sv = store.get('state', null);
     const ok = !!(sv && Array.isArray(sv.slots) && sv.slots.length === slots.length && sv.hero);
