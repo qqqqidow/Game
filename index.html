@@ -157,7 +157,7 @@ img{-webkit-user-drag:none;user-drag:none}
 #hero .shd{position:absolute;left:0;top:0;width:calc(var(--hh)*.6);height:calc(var(--hh)*.13);transform:translate(-50%,-50%);border-radius:50%;background:rgba(30,40,10,.28);filter:blur(2px)}
 #hero .body{position:absolute;left:0;top:0;transform:translate(-50%,-97%);transform-origin:50% 100%}
 #hero img{display:block;height:var(--hh);width:auto}
-#hero img{transition:transform .2s;transform-origin:50% 100%}
+#hero img{transition:transform .2s,scale .14s ease-out;transform-origin:50% 100%;scale:var(--face,1) 1}
 #hero.run img{transform:rotate(calc(var(--dir,1)*3deg))}
 #hero.walk .body{animation:waddle .72s ease-in-out infinite}
 #hero.run .body{animation-duration:.46s}
@@ -457,6 +457,8 @@ img{-webkit-user-drag:none;user-drag:none}
     const sc = SCENES[scene];
     target = { u: clamp(u, 0.01, 0.99), v: clamp(v, sc.vmin, sc.vmax) };
     pending = false; run = fast;
+    const fdx = (target.u - hero.u) * W;
+    if (Math.abs(fdx) > 4) heroEl.style.setProperty('--face', fdx > 0 ? 1 : -1);   // 누른 쪽으로 바라봐요
   }
   stage.addEventListener('pointerdown', e => {
     if (!playing || transitioning) return;
@@ -482,6 +484,7 @@ img{-webkit-user-drag:none;user-drag:none}
       } else {
         hero.u += dx / d * sp / W; hero.v += dy / d * sp / H; moving = true;
         heroEl.style.setProperty('--dir', dx >= 0 ? 1 : -1);
+        if (Math.abs(dx) > 1.5) heroEl.style.setProperty('--face', dx > 0 ? 1 : -1);
       }
       renderHero();
       if (scene === 0 && moving && (hero.u >= 0.965 || (hero.u >= GATE.u0 && hero.u <= GATE.u1 && hero.v <= GATE.v1))) goScene(1);
@@ -528,6 +531,7 @@ img{-webkit-user-drag:none;user-drag:none}
     else { target = { u: STAND.u, v: STAND.v }; pending = true; run = fast; }
   });
   function patchAction() {
+    heroEl.style.setProperty('--face', -1);   // 밭은 친구 왼쪽에 있어요
     let i = slots.findIndex(p => p.s === 3);
     if (i >= 0) return harvest(i);
     i = slots.findIndex(p => p.s === 1);
