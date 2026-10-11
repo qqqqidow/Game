@@ -127,8 +127,16 @@ img{-webkit-user-drag:none;user-drag:none}
 @keyframes nudgeL{50%{transform:translateX(-5px)}}
 
 /* soil patch (painted in the background): one tap target */
-#patch{position:absolute;z-index:2000;border-radius:18px}
-#patch.hint{animation:glow 1.4s ease-in-out infinite}
+.plot,#stairsHit{position:absolute;z-index:2000;border-radius:18px}
+.plot.hint{animation:glow 1.4s ease-in-out infinite}
+.cover{position:absolute;z-index:5;pointer-events:none;background:url(assets/sand.webp) 0 0/var(--sw,720px) auto;border-radius:40%;opacity:1;transition:opacity .9s ease;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);-webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);mask-composite:intersect}
+.cover.off{opacity:0}
+.plot.pop{animation:glow 1.2s ease-in-out 1}
+#stairs{transform-origin:50% 52%}
+#stairs.boing{animation:boing .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes boing{0%{transform:scale(1,1)}30%{transform:scale(1.012,.972)}62%{transform:scale(.997,1.014)}100%{transform:scale(1,1)}}
 @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 0 6px rgba(255,255,255,.75),0 0 22px 6px rgba(255,244,220,.8)}}
 .slot{position:absolute;left:0;top:0;width:var(--pw);height:var(--pw);pointer-events:none}
 .slot .plant{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
@@ -198,6 +206,7 @@ img{-webkit-user-drag:none;user-drag:none}
   .best{margin-top:6px}
 }
 @media (prefers-reduced-motion:reduce){
+  #stairs.boing{animation:none}
   *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
@@ -232,8 +241,9 @@ img{-webkit-user-drag:none;user-drag:none}
     <div id="world">
       <img class="scene" id="scene0" src="assets/bg.webp" alt="" draggable="false">
       <img class="scene" id="scene1" src="assets/bg2.webp" alt="" draggable="false" hidden>
+      <img class="scene" id="stairs" src="assets/stairs.webp" alt="" draggable="false" hidden>
       <div id="slots"></div>
-      <button id="patch" type="button" aria-label="밭: 씨앗 심기, 물 주기, 수확하기" hidden></button>
+      <button id="stairsHit" type="button" aria-label="구름 계단: 구름공방으로" hidden></button>
       <div id="hero">
         <span class="shd"></span>
         <div class="body"><div id="say"></div><img id="heroImg" alt="" draggable="false"></div>
@@ -275,11 +285,24 @@ img{-webkit-user-drag:none;user-drag:none}
     { nw: 1672, nh: 940, vmin: 0.72, vmax: 0.97 },
     { nw: 1670, nh: 942, vmin: 0.56, vmax: 0.97 }
   ];
-  // 텃밭 그림 속에 이미 그려진 갈색 땅
-  const PATCH = { u0: 0.145, u1: 0.265, v0: 0.515, v1: 0.59 };
-  const SLOTS = [{ u: 0.170, v: 0.572 }, { u: 0.205, v: 0.572 }, { u: 0.240, v: 0.572 }];
+  /* 텃밭 그림(24칸) 속 밭 칸 (1670x942 그림 기준 픽셀). 밭 한 칸에 작물 한 개.
+     처음엔 1칸만 열려 있고, 나머지는 잠겨 있다가 레벨이 오를 때마다 하나씩 열려요. (수치는 임시) */
+  const ROW_Y = [517, 591, 669, 762], ROW_H = [55, 70, 80, 88], ROW_W = [185, 205, 225, 245];
+  const COL_X = [[340, 531, 729, 931, 1136, 1332], [288, 498, 716, 941, 1169, 1390], [233, 466, 706, 952, 1205, 1446], [258, 430, 691, 964, 1244, 1485]];
+  const FARM_STAGES = [[1, 1, 1], [2, 2, 4], [3, 2, 6], [3, 3, 9], [4, 3, 12], [5, 3, 15], [6, 4, 24]];   // [가로 칸, 세로 줄, 칸 수]
+  const PLOTS = [];
+  FARM_STAGES.forEach(([cols, rows]) => {
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (PLOTS.some(q => q.r === r && q.c === c)) continue;
+      const cx = COL_X[r][c] / 1670, cy = ROW_Y[r] / 942;
+      const w = (r === 3 && c === 0 ? 100 : ROW_W[r]) / 1670, h = ROW_H[r] / 942;
+      PLOTS.push({ r, c, cx, cy, w, h, v: cy + h * 0.3, stand: { u: cx + 0.03, v: Math.min(0.96, cy + h * 0.8 + 0.045) } });
+    }
+  });
+  const STAIR = { base: { u: 0.50, v: 0.575 }, topU: 0.503, topV: 0.10, hops: 8, ms: 2600 };   // 구름 계단
+  const need = L => L + 2;   // 다음 레벨까지 필요한 수확 수 (임시)
+  const levelOf = t => { let L = 1; while (t >= need(L)) { t -= need(L); L++; } return L; };
   const GATE = { u0: 0.60, u1: 0.88, v1: 0.78 };   // 마당 그림 속 밭 앞: 여기에 들어서면 밭 화면으로
-  const STAND = { u: 0.315, v: 0.60 };   // 친구가 밭 일을 할 때 서는 자리
   const GROW_MS = 5200;
 
   const $ = s => document.querySelector(s);
@@ -328,14 +351,15 @@ img{-webkit-user-drag:none;user-drag:none}
   const stage = $('#stage'), world = $('#world');
   const imgs = [$('#scene0'), $('#scene1')], fg = $('#fg1');
   const heroEl = $('#hero'), say = $('#say');
-  const patchEl = $('#patch'), slotsEl = $('#slots');
+  const slotsEl = $('#slots'), stairsEl = $('#stairs'), stairsHit = $('#stairsHit');
   const edgeR = $('#edgeR'), edgeL = $('#edgeL'), veil = $('#veil');
 
   let scene = 0;
   let vw = 0, vh = 0, W = 0, H = 0, top = 0;
   let cam = 0;
   const hero = { u: 0.45, v: 0.88 };
-  let target = null, pending = false, transitioning = false, playing = false;
+  let target = null, pendingAct = null, transitioning = false, playing = false;
+  let climbK = 0, hopPx = 0, climbing = false;
   let run = false, tapCount = 0, lastTap = { t: 0, x: 0, y: 0 };
   let lastT = 0, rafId = 0, sayTimer = null, tickTimer = null;
 
@@ -360,35 +384,75 @@ img{-webkit-user-drag:none;user-drag:none}
       </g>
     </svg>`;
 
-  // 밭 칸 3개: 그림 속 갈색 땅 위에 심겨요 (따로 그린 밭 없음)
-  const slots = SLOTS.map((pos, i) => {
+  // 밭 칸: 그림 속 갈색 땅 위에 심겨요 (따로 그린 밭 없음)
+  const slots = PLOTS.map((pos, i) => {
     const el = document.createElement('div');
     el.className = 'slot'; el.dataset.s = '0';
     el.innerHTML = `${plantSVG}<span class="cue"></span><span class="bar"><i></i></span>`;
     el.hidden = true;
     slotsEl.appendChild(el);
-    return { el, s: 0, t0: 0, pos };
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'plot'; btn.hidden = true;
+    btn.setAttribute('aria-label', `밭 ${i + 1}번`);
+    btn.addEventListener('click', e => plotClick(i, e));
+    slotsEl.appendChild(btn);
+    const cover = document.createElement('div'); cover.className = 'cover'; cover.hidden = true;   // 안 열린 칸은 모래로 덮어서 안 보여요
+    slotsEl.appendChild(cover);
+    return { el, btn, cover, s: 0, t0: 0, pos };
   });
   const CUE = { 1: '물 주기', 3: '수확!' };
+  let level = levelOf(total), open = 1, farmStage = -1;
+  const isOpen = i => i < open;
+  function paint(i) {
+    const p = slots[i], lock = !isOpen(i);
+    p.cover.classList.toggle('off', !lock);
+    p.el.dataset.s = lock ? '0' : String(p.s);
+    p.el.querySelector('.cue').textContent = lock ? '' : (CUE[p.s] || '');
+  }
+  function paintHint() {
+    const idle = slots.slice(0, open).every(x => x.s === 0);
+    slots.forEach((p, i) => p.btn.classList.toggle('hint', idle && open === 1 && i === 0));
+  }
+  // 레벨에 맞게 열린 칸 수와 밭 그림을 맞춰요
+  function refreshFarm(instant) {
+    const prev = open;
+    level = levelOf(total); open = Math.min(PLOTS.length, level);
+    const st = FARM_STAGES.findIndex(f => f[2] >= open);
+    if (st !== farmStage) {
+      farmStage = st;
+      const url = st === 0 ? 'assets/bg2.webp' : `assets/farm${FARM_STAGES[st][2]}.webp`;
+      if (instant) imgs[1].src = url;
+      else { const im = new Image(); im.onload = () => { if (farmStage === st) imgs[1].src = url; }; im.src = url; }
+    }
+    slots.forEach((p, i) => paint(i)); paintHint();
+    if (!instant) for (let i = prev; i < open; i++) { const b = slots[i].btn; b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 1300); }
+    farmShow(scene === 1);
+    renderScore(false);
+  }
+  function farmShow(on) {
+    const n = farmStage < 0 ? 0 : FARM_STAGES[farmStage][2];   // 지금 밭 그림에 있는 칸만
+    slots.forEach((p, i) => {
+      const inStage = on && i < n;
+      p.el.hidden = !inStage || !isOpen(i); p.btn.hidden = !inStage || !isOpen(i); p.cover.hidden = !inStage;
+    });
+    stairsEl.hidden = !on; stairsHit.hidden = !on;
+  }
   function setSlot(i, s) {
     const p = slots[i];
-    p.s = s; p.el.dataset.s = String(s);
+    p.s = s;
     if (s === 2) p.t0 = Date.now();
     p.el.style.setProperty('--p', 0);
-    p.el.querySelector('.cue').textContent = CUE[s] || '';
-    patchEl.classList.toggle('hint', slots.every(x => x.s === 0));
+    paint(i); paintHint();
     saveState();
   }
   function restoreSlot(i, d) {
     const p = slots[i];
-    const s = [0, 1, 2, 3].includes(d && d.s) ? d.s : 0;
-    p.s = s; p.el.dataset.s = String(s);
+    p.s = [0, 1, 2, 3].includes(d && d.s) ? d.s : 0;
     p.t0 = (d && +d.t0) || Date.now();
     p.el.style.setProperty('--p', 0);
-    p.el.querySelector('.cue').textContent = CUE[s] || '';
-    patchEl.classList.toggle('hint', slots.every(x => x.s === 0));
+    paint(i);
   }
-  /* 전체 저장: 장면, 친구 위치, 이번 판 점수, 밭 3칸의 상태와 심은 시각 */
+  /* 전체 저장: 장면, 친구 위치, 이번 판 점수, 밭 칸들의 상태와 심은 시각 */
   function saveState() {
     if (!playing) return;
     store.set('state', { scene, hero: { u: hero.u, v: hero.v }, session, slots: slots.map(p => ({ s: p.s, t0: p.t0 })) });
@@ -403,22 +467,31 @@ img{-webkit-user-drag:none;user-drag:none}
     world.style.width = W + 'px'; world.style.height = H + 'px'; world.style.top = top + 'px';
     world.style.setProperty('--pw', (H * 0.072).toFixed(1) + 'px');
     slots.forEach(p => {
-      p.el.style.transform = `translate(${(p.pos.u * W).toFixed(1)}px,${(p.pos.v * H).toFixed(1)}px) translate(-50%,-88%)`;
+      p.el.style.transform = `translate(${(p.pos.cx * W).toFixed(1)}px,${(p.pos.v * H).toFixed(1)}px) translate(-50%,-88%)`;
       p.el.style.zIndex = Math.round(p.pos.v * 1000);
     });
-    const pad = Math.max(6, H * 0.012);
-    patchEl.style.left = (PATCH.u0 * W - pad) + 'px';
-    patchEl.style.top = (PATCH.v0 * H - pad - H * 0.05) + 'px';
-    patchEl.style.width = ((PATCH.u1 - PATCH.u0) * W + pad * 2) + 'px';
-    patchEl.style.height = ((PATCH.v1 - PATCH.v0) * H + pad * 2 + H * 0.05) + 'px';
+    slots.forEach(p => {
+      const q = p.pos, pad = Math.max(3, H * 0.006);
+      p.btn.style.left = (q.cx * W - q.w * W / 2 - pad) + 'px'; p.btn.style.top = (q.cy * H - q.h * H / 2 - pad) + 'px';
+      p.btn.style.width = (q.w * W + pad * 2) + 'px'; p.btn.style.height = (q.h * H + pad * 2) + 'px';
+    });
+    slots.forEach(p => {
+      const q = p.pos, c = p.cover.style, mx = q.w * 0.30, my = q.h * 0.62;
+      c.left = ((q.cx - q.w / 2 - mx) * W) + 'px'; c.top = ((q.cy - q.h / 2 - my) * H) + 'px';
+      c.width = ((q.w + mx * 2) * W) + 'px'; c.height = ((q.h + my * 2) * H) + 'px';
+      c.backgroundPosition = `${-(q.cx - q.w / 2 - mx) * W}px ${-(q.cy - q.h / 2 - my) * H}px`;
+    });
+    world.style.setProperty('--sw', (720 * W / 1670).toFixed(1) + 'px');
+    stairsHit.style.left = (0.31 * W) + 'px'; stairsHit.style.top = '0px';
+    stairsHit.style.width = (0.39 * W) + 'px'; stairsHit.style.height = (0.50 * H) + 'px';
     renderHero();
     applyCam(true);
   }
   function renderHero() {
     const sc = SCENES[scene];
     const t = clamp((hero.v - sc.vmin) / (sc.vmax - sc.vmin), 0, 1);
-    heroEl.style.setProperty('--hh', (H * (0.17 + 0.09 * t)).toFixed(1) + 'px');
-    heroEl.style.transform = `translate(${(hero.u * W).toFixed(1)}px,${(hero.v * H).toFixed(1)}px)`;
+    heroEl.style.setProperty('--hh', (H * (0.17 + 0.09 * t) * (1 - 0.5 * climbK)).toFixed(1) + 'px');
+    heroEl.style.transform = `translate(${(hero.u * W).toFixed(1)}px,${(hero.v * H - hopPx).toFixed(1)}px)`;
     heroEl.style.zIndex = Math.round(hero.v * 1000);
   }
   function applyCam(jump, dt = 0) {
@@ -457,13 +530,13 @@ img{-webkit-user-drag:none;user-drag:none}
   function walkTo(u, v, fast = false) {
     const sc = SCENES[scene];
     target = { u: clamp(u, 0.01, 0.99), v: clamp(v, sc.vmin, sc.vmax) };
-    pending = false; run = fast;
+    pendingAct = null; run = fast;
     const fdx = (target.u - hero.u) * W;
     if (Math.abs(fdx) > 4) heroEl.style.setProperty('--face', fdx > 0 ? faceR : -faceR);   // 누른 쪽으로 바라봐요
   }
   stage.addEventListener('pointerdown', e => {
     if (!playing || transitioning) return;
-    if (e.target.closest('#patch')) return;
+    if (e.target.closest('.plot, #stairsHit')) return;
     walkTo((e.clientX + cam) / W, (e.clientY - top) / H, isDouble(e.clientX, e.clientY));
   });
   edgeR.addEventListener('click', e => { if (!transitioning) walkTo(0.99, hero.v, isDouble(e.clientX, e.clientY)); });
@@ -481,7 +554,7 @@ img{-webkit-user-drag:none;user-drag:none}
       if (d <= sp) {
         hero.u = target.u; hero.v = target.v; target = null; run = false;
         kick('settle', 320); saveState();
-        if (pending) { pending = false; patchAction(); }
+        if (pendingAct) { const f = pendingAct; pendingAct = null; f(); }
       } else {
         hero.u += dx / d * sp / W; hero.v += dy / d * sp / H; moving = true;
         heroEl.style.setProperty('--dir', dx >= 0 ? 1 : -1);
@@ -495,21 +568,20 @@ img{-webkit-user-drag:none;user-drag:none}
       const hw = say.offsetWidth / 2, sx = hero.u * W - cam;
       say.style.marginLeft = (Math.max(0, 8 + hw - sx) - Math.max(0, sx + hw - (vw - 8))).toFixed(0) + 'px';
     }
-    heroEl.classList.toggle('walk', moving);
+    heroEl.classList.toggle('walk', moving || climbing);
     heroEl.classList.toggle('run', moving && run);
     applyCam(false, dt);
   }
 
   /* ----- 장면 전환: 마당의 오른쪽 끝 → 텃밭, 텃밭의 왼쪽 끝 → 마당 ----- */
   function goScene(to) {
-    transitioning = true; target = null; pending = false; run = false;
+    transitioning = true; target = null; pendingAct = null; run = false;
     heroEl.classList.remove('walk', 'run');
     veil.classList.add('on');
     setTimeout(() => {
       scene = to;
       imgs.forEach((im, i) => im.hidden = i !== to); fg.hidden = to !== 1;
-      slots.forEach(p => p.el.hidden = to !== 1);
-      patchEl.hidden = to !== 1;
+      farmShow(to === 1);
       const sc = SCENES[to];
       hero.u = to === 1 ? 0.05 : 0.74;
       hero.v = clamp(hero.v, sc.vmin, sc.vmax);
@@ -523,23 +595,56 @@ img{-webkit-user-drag:none;user-drag:none}
     }, 270);
   }
 
-  /* ----- 밭 일: 갈색 땅을 누르면 상황에 맞는 일을 해요 ----- */
-  patchEl.addEventListener('click', e => {
+  /* ----- 밭 일: 칸을 누르면 그 칸에서 상황에 맞는 일을 해요 ----- */
+  function plotClick(i, e) {
     if (!playing || transitioning) return;
     const fast = isDouble(e.clientX, e.clientY);
-    const near = Math.abs(hero.u - STAND.u) < 0.045 && Math.abs(hero.v - STAND.v) < 0.05;
-    if (near) { target = null; patchAction(); }
-    else { target = { u: STAND.u, v: STAND.v }; pending = true; run = fast; }
-  });
-  function patchAction() {
-    heroEl.style.setProperty('--face', -faceR);   // 밭은 친구 왼쪽에 있어요
-    let i = slots.findIndex(p => p.s === 3);
-    if (i >= 0) return harvest(i);
-    i = slots.findIndex(p => p.s === 1);
-    if (i >= 0) { water(i); setSlot(i, 2); speak('쑥쑥 자라라!'); return; }
-    i = slots.findIndex(p => p.s === 0);
-    if (i >= 0) { setSlot(i, 1); speak('씨앗을 심었어요'); return; }
+    if (!isOpen(i)) return;
+    const st = PLOTS[i].stand;
+    const near = Math.abs(hero.u - st.u) < 0.04 && Math.abs(hero.v - st.v) < 0.045;
+    if (near) { target = null; plotAction(i); }
+    else { target = { u: st.u, v: st.v }; pendingAct = () => plotAction(i); run = fast; }
+  }
+  function plotAction(i) {
+    heroEl.style.setProperty('--face', -faceR);   // 밭은 친구 위쪽에 있어요
+    const s = slots[i].s;
+    if (s === 3) return harvest(i);
+    if (s === 1) { water(i); setSlot(i, 2); speak('쑥쑥 자라라!'); return; }
+    if (s === 0) { setSlot(i, 1); speak('씨앗을 심었어요'); return; }
     speak('아직 자라는 중이에요');
+  }
+  /* ----- 구름 계단: 누르면 계단 밑까지 걸어가서 통통 올라가요 ----- */
+  stairsHit.addEventListener('click', e => {
+    if (!playing || transitioning) return;
+    const fast = isDouble(e.clientX, e.clientY);
+    const near = Math.abs(hero.u - STAIR.base.u) < 0.04 && Math.abs(hero.v - STAIR.base.v) < 0.045;
+    if (near) { target = null; climb(); }
+    else { target = { u: STAIR.base.u, v: STAIR.base.v }; pendingAct = climb; run = fast; }
+  });
+  function climb() {
+    transitioning = true; climbing = true; target = null; run = false;
+    const u0 = hero.u, v0 = hero.v, t0 = performance.now();
+    let lastHop = 0;
+    const step = now => {
+      const p = clamp((now - t0) / STAIR.ms, 0, 1), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      const ph = p * STAIR.hops, idx = Math.floor(ph);
+      climbK = p; hopPx = Math.sin((ph % 1) * Math.PI) * H * 0.028 * (1 - 0.4 * p);
+      hero.u = u0 + (STAIR.topU - u0) * Math.min(1, p * 3); hero.v = v0 + (STAIR.topV - v0) * e;
+      heroEl.style.setProperty('--dir', 1);
+      if (idx > lastHop && idx < STAIR.hops) { lastHop = idx; stairsEl.classList.remove('boing'); void stairsEl.offsetWidth; stairsEl.classList.add('boing'); }
+      renderHero();
+      if (p < 1) return requestAnimationFrame(step);
+      hopPx = 0; renderHero(); speak('구름공방은 아직 준비 중이에요', 2400);
+      setTimeout(() => {
+        veil.classList.add('on');
+        setTimeout(() => {
+          climbK = 0; climbing = false; hero.u = STAIR.base.u; hero.v = STAIR.base.v + 0.03;
+          renderHero(); saveState(); veil.classList.remove('on');
+          setTimeout(() => { transitioning = false; }, 260);
+        }, 270);
+      }, 1500);
+    };
+    requestAnimationFrame(step);
   }
   function water(i) {
     const d = document.createElement('span'); d.className = 'drops';
@@ -550,15 +655,17 @@ img{-webkit-user-drag:none;user-drag:none}
     setSlot(i, 0);
     session++; total++; store.set('total', total); saveState();
     renderScore(true);
+    const oldLv = level, oldOpen = open;
+    if (levelOf(total) !== oldLv) refreshFarm(false);
     kick('cheer', 520);
     const f = document.createElement('span'); f.className = 'float'; f.textContent = '+1';
     slots[i].el.appendChild(f); setTimeout(() => f.remove(), 950);
     const lines = ['맛있겠다!', '콩이 통통해요', '잘 땄어요!', '한 개 더!'];
-    speak(session % 10 === 0 ? `벌써 ${session}개째!` : lines[session % lines.length]);
+    speak(level !== oldLv ? (open !== oldOpen ? `레벨 ${level}! 새 밭이 열렸어요` : `레벨 ${level}!`) : session % 10 === 0 ? `벌써 ${session}개째!` : lines[session % lines.length]);
   }
   function renderScore(bump) {
     $('#sessionN').textContent = session;
-    $('#totalN').textContent = `누적 ${total}`;
+    $('#totalN').textContent = `Lv.${level} · 누적 ${total}`;
     if (bump) { const s = $('#score'); s.classList.remove('bump'); void s.offsetWidth; s.classList.add('bump'); }
   }
   function tick() {
@@ -583,10 +690,12 @@ img{-webkit-user-drag:none;user-drag:none}
     session = ok ? (sv.session | 0) : 0; renderScore(false);
     hero.u = ok ? clamp(+sv.hero.u || 0.45, 0.05, 0.95) : 0.45;
     hero.v = ok ? clamp(+sv.hero.v || 0.88, sc.vmin, sc.vmax) : 0.88;
-    target = null; pending = false; transitioning = false;
+    target = null; pendingAct = null; transitioning = false; climbing = false; climbK = 0; hopPx = 0;
     imgs.forEach((im, i) => im.hidden = i !== scene); fg.hidden = scene !== 1;
-    slots.forEach((p, i) => { p.el.hidden = scene !== 1; if (ok) restoreSlot(i, sv.slots[i]); else setSlot(i, 0); });
-    patchEl.hidden = scene !== 1;
+    refreshFarm(true);
+    farmShow(scene === 1);
+    slots.forEach((p, i) => { if (ok) restoreSlot(i, sv.slots[i]); else setSlot(i, 0); });
+    paintHint();
     start.hidden = true; play.hidden = false;
     playing = true; lastT = performance.now();
     layout();

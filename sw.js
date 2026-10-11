@@ -1,7 +1,7 @@
-const CACHE = 'summer-garden-v13';
+const CACHE = 'summer-garden-v17';
 const ASSETS = [
   './', 'index.html', 'manifest.json',
-  'assets/bg.webp', 'assets/bg2.webp', 'assets/foreground.webp', 'assets/chiikawa.webp', 'assets/hachiware.webp', 'assets/usagi.webp', 'assets/fonts/onglyph.woff', 'assets/audio/bgm.mp3',
+  'assets/bg.webp', 'assets/bg2.webp', 'assets/farm4.webp', 'assets/farm6.webp', 'assets/farm9.webp', 'assets/farm12.webp', 'assets/farm15.webp', 'assets/farm24.webp', 'assets/sand.webp', 'assets/stairs.webp', 'assets/foreground.webp', 'assets/chiikawa.webp', 'assets/hachiware.webp', 'assets/usagi.webp', 'assets/fonts/onglyph.woff', 'assets/audio/bgm.mp3',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png'
 ];
 
