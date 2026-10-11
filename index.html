@@ -293,10 +293,11 @@ img{-webkit-user-drag:none;user-drag:none}
   const start = $('#start'), play = $('#play');
 
   /* ---------- 배경음악 (계속 반복) ---------- */
-  const bgm = new Audio('assets/audio/audio.mp3');
+  const bgm = new Audio('assets/audio/bgm.mp3');
   bgm.loop = true; bgm.volume = 0.5; bgm.preload = 'auto';
   let bgmOn = false;
   function bgmPlay() { bgmOn = true; bgm.play().catch(() => {}); }
+  function bgmStop() { bgmOn = false; bgm.pause(); bgm.currentTime = 0; }
 
   /* ---------- 시작 화면: 캐릭터 고르기 ---------- */
   const row = $('#pickRow');
@@ -587,13 +588,13 @@ img{-webkit-user-drag:none;user-drag:none}
     bgmPlay();
   }
   function leaveGame() {
-    saveState(); playing = false; clearInterval(tickTimer); cancelAnimationFrame(rafId);
+    saveState(); bgmStop(); playing = false; clearInterval(tickTimer); cancelAnimationFrame(rafId);
     play.hidden = true; start.hidden = false; showBest();
   }
   $('#goBtn').addEventListener('click', enterGame);
   $('#backBtn').addEventListener('click', leaveGame);
   addEventListener('resize', () => { if (playing) layout(); });
-  addEventListener('pagehide', saveState);
+  addEventListener('pagehide', () => { saveState(); bgm.pause(); });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { saveState(); bgm.pause(); }
     else if (bgmOn) bgm.play().catch(() => {});
